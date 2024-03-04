@@ -64,6 +64,17 @@ fn main() -> Result<()> {
                 match app.mode {
                     app::Mode::Normal => {
                         if key.kind == KeyEventKind::Press{
+                            if key.modifiers == event::KeyModifiers::SHIFT {
+                                match key.code {
+                                    KeyCode::Char('J') => {
+                                        app.move_down();
+                                    },
+                                    KeyCode::Char('K') => {
+                                        app.move_up();
+                                    },
+                                    _ => {},
+                                }
+                            }
                             match key.code {
                                 KeyCode::Char('q') => {
                                     break;

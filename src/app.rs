@@ -106,6 +106,24 @@ impl App {
             self.toggle_editing();
         }
     }
+    pub fn move_up(&mut self) {
+        if let Some(line_num) = self.line_num{
+            if line_num > 0 {
+                self.todos.move_todo(line_num, cmp::max(0, line_num.saturating_sub(1)));
+                self.line_num = Some(line_num - 1);
+                self.refresh_normal_selection();
+            }
+        }
+    }
+    pub fn move_down(&mut self) {
+        if let Some(line_num) = self.line_num{
+            if line_num < self.todos.num - 1 {
+                self.todos.move_todo(line_num, cmp::min(self.todos.num.saturating_sub(1), line_num.saturating_add(1)));
+                self.line_num = Some(line_num + 1);
+                self.refresh_normal_selection();
+            }
+        }
+    }
     pub fn delete(&mut self) {
         if let Some(line_num) = self.line_num {
             self.todos.delete(line_num);
