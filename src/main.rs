@@ -9,9 +9,10 @@ use ratatui::prelude::{CrosstermBackend, Terminal};
 use std::io::{stdout, Result};
 mod app;
 mod ui;
+mod config;
 use crate::{
     app::App,
-    ui::ui
+    ui::ui,
 };
 
 fn main() -> Result<()> {
@@ -93,6 +94,12 @@ fn main() -> Result<()> {
                                 }
                                 KeyCode::Char('v') => {
                                     app.toggle_visual();
+                                }
+                                KeyCode::Char('s') => {
+                                    config::save(&app);
+                                }
+                                KeyCode::Char('r') => {
+                                    app = config::retrieve();
                                 }
                                 KeyCode::Char('j') => {
                                     if let Some(line_num) = app.line_num{

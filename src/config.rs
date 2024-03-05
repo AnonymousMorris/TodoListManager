@@ -1,9 +1,52 @@
-use serde;
+use serde::{Serialize, Deserialize, Serializer, Deserializer};
+use core::panic;
+use std::fs;
+use home;
 
+use crate::app::App;
 
+pub fn save(app: &App) {
+    let home = match home::home_dir() {
+            Some(dir) => dir,
+            None => panic!("error getting home directory"),
+        };
+    let app_path = home.join(".todo-list-manager");
+    if !app_path.exists() {
+        match fs::create_dir(&app_path){
+            Err(e) => panic!("failed to create dir with error: {}", e),
+            Ok(_) => ()
+        }
+        print!("created dir: ~/.todo-list-manager");
+    }
+    let serialize = serde_json::to_string(&app).unwrap();
+    let file_path = app_path.join("todos.json");
+    match fs::write(file_path, serialize) {
+        Err(e) => panic!("write failed with error: {}", e),
+        Ok(_) => ()
+    }
+}
+pub fn retrieve() -> App {
+    let home = match home::home_dir() {
+            Some(dir) => dir,
+            None => panic!("error getting home directory"),
+        };
+    let app_path = home.join(".todo-list-manager");
+    if !app_path.exists() {
+        match fs::create_dir(&app_path){
+            Err(e) => panic!("failed to create dir with error: {}", e),
+            Ok(_) => return App::new(),
+        }
+    }
+    let file_path = app_path.join("todos.json");
+    let todos = match fs::read_to_string(file_path) {
+        Err(e) => panic!("could not read file ~/.todo-list-manager with error: {}", e),
+        Ok(result) => result,
+    };
+    let app = serde_json::from_str(&todos).unwrap();
+    app
+}
 
-
-
+/*
     pub(crate) fn save(&self) -> Result<(), ConfigError> {
         let toml_pretty = toml::to_string_pretty(self)
             .change_context(ConfigError::TomlError)?
@@ -42,3 +85,4 @@ use serde;
             .change_context(ConfigError::FileWriteError)?;
         Ok(())
     }
+*/

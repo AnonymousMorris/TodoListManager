@@ -1,10 +1,13 @@
+use serde::{Deserialize, Serialize};
 use core::fmt;
 use std::cmp;
 
+#[derive(Serialize, Deserialize)]
 pub struct TodoList {
     pub num: usize,
     pub todos: Vec<Todo>,
 }
+#[derive(Serialize, Deserialize)]
 pub struct App {
     pub currently_editing: Option<CurrentlyEditing>,
     pub mode: Mode,
@@ -12,6 +15,7 @@ pub struct App {
     pub line_num: Option<usize>,
     pub visual_begin: Option<usize>,
 }
+#[derive(Serialize, Deserialize)]
 pub struct Todo {
     pub selected: bool,
     pub value: String,
@@ -20,10 +24,12 @@ pub struct Todo {
     pub editing: bool,
 }
 #[allow(dead_code)]
+#[derive(Debug, Clone, Serialize, Deserialize)]
 pub enum CurrentlyEditing {
     List,
     Description,
 }
+#[derive(Serialize, Deserialize)]
 pub enum Mode {
     Insert, 
     Normal,
@@ -107,6 +113,12 @@ impl App {
             self.refresh_normal_selection();
             self.toggle_editing();
         }
+        else {
+            self.todos.add_todo(Todo::new(), 0);
+            self.line_num = Some(0);
+            self.refresh_normal_selection();
+            self.toggle_editing();
+        }
     }
     pub fn move_up(&mut self) {
         if let Some(line_num) = self.line_num{
@@ -157,11 +169,14 @@ impl App {
         while i < self.todos.todos.len() {
             if self.todos.todos[i].selected {
                 self.todos.delete(i);
-                i -= 1;
+                continue;
             }
             i += 1;
         }
         self.todos.num = self.todos.todos.len();
+        if self.todos.num == 0 {
+            self.line_num = None;
+        }
         if let Some(line_num) = self.line_num {
             self.line_num = Some(cmp::min(self.todos.num - 1, line_num));
         }
