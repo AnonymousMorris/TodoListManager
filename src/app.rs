@@ -153,11 +153,20 @@ impl App {
         }
     }
     pub fn delete(&mut self) {
-        for i in 0..self.todos.num {
-            if self.todos.todos[i].selected == true {
+        let mut i = 0;
+        while i < self.todos.todos.len() {
+            if self.todos.todos[i].selected {
                 self.todos.delete(i);
+                i -= 1;
             }
+            i += 1;
         }
+        self.todos.num = self.todos.todos.len();
+        if let Some(line_num) = self.line_num {
+            self.line_num = Some(cmp::min(self.todos.num - 1, line_num));
+        }
+        self.mode = Mode::Normal;
+        self.refresh_normal_selection();
     }
     pub fn toggle_editing (&mut self) {
         match self.mode {
