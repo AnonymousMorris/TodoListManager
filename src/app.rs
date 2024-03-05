@@ -10,6 +10,7 @@ pub struct App {
     pub mode: Mode,
     pub todos: TodoList,
     pub line_num: Option<usize>,
+    pub visual_begin: Option<usize>,
 }
 pub struct Todo {
     pub selected: bool,
@@ -97,6 +98,7 @@ impl App {
             mode: Mode::Normal,
             todos: TodoList::new(),
             line_num: None,
+            visual_begin: None,
         }
     }
     pub fn add_todo(&mut self) {
@@ -124,14 +126,36 @@ impl App {
             }
         }
     }
-    pub fn delete(&mut self) {
+    pub fn visual_move_up(&mut self) {
         if let Some(line_num) = self.line_num {
-            self.todos.delete(line_num);
-            if self.todos.num == 0 {
-                self.line_num = None;
+            if let Some(visual_begin) = self.visual_begin{
+                let a = cmp::min(line_num, visual_begin);
+                let b = cmp::max(line_num, visual_begin);
+                if a > 0 {
+                    self.todos.move_todo(a-1, b);
+                    self.line_num = Some(line_num - 1);
+                    self.visual_begin = Some(visual_begin - 1);
+                }
             }
-            else{
-                self.line_num= Some(cmp::max(line_num, self.todos.num - 1));
+        }
+    }
+    pub fn visual_move_down(&mut self) {
+        if let Some(line_num) = self.line_num {
+            if let Some(visual_begin) = self.visual_begin{
+                let a = cmp::min(line_num, visual_begin);
+                let b = cmp::max(line_num, visual_begin);
+                if b < self.todos.num - 1 {
+                    self.todos.move_todo(b+1, a);
+                    self.line_num = Some(line_num + 1);
+                    self.visual_begin = Some(visual_begin + 1);
+                }
+            }
+        }
+    }
+    pub fn delete(&mut self) {
+        for i in 0..self.todos.num {
+            if self.todos.todos[i].selected == true {
+                self.todos.delete(i);
             }
         }
     }
@@ -152,11 +176,20 @@ impl App {
         match self.mode {
             Mode::Visual => {
                 self.mode = Mode::Normal;
+                self.visual_begin = None;
             },
             Mode::Normal => {
                 self.mode = Mode::Visual;
+                if let Some(line_num) = self.line_num{
+                    self.visual_begin = Some(line_num);
+                }
             },
             Mode::Insert => {}
+        }
+    }
+    pub fn toggle_todo_select (&mut self) {
+        if let Some(line_num) = self.line_num {
+            self.todos.todos[line_num].selected ^= true;
         }
     }
     pub fn refresh_normal_selection (&mut self) {
@@ -173,6 +206,22 @@ impl App {
         else {
             for i in 0..self.todos.num{
                 self.todos.todos[i].selected = false;
+            }
+        }
+    }
+    pub fn refresh_visual_selection (&mut self) {
+        if let Some(visual_begin) = self.visual_begin {
+            if let Some(line_num) = self.line_num {
+                let a = cmp::min(visual_begin, line_num);
+                let b = cmp:: max(visual_begin, line_num);
+                for i in 0..self.todos.num {
+                    if a <= i && i <= b {
+                        self.todos.todos[i].selected = true;
+                    }
+                    else {
+                        self.todos.todos[i].selected = false;
+                    }
+                }
             }
         }
     }

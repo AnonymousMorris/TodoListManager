@@ -43,7 +43,8 @@ fn render_list(app: &App) -> Paragraph {
             todo_style = todo_style.add_modifier(Modifier::UNDERLINED);
         }
         let todo_span = Span::raw(& todo.value).style(todo_style);
-        let todo_line = Line::from(vec![Span::raw(status_string), todo_span]);
+        let cursor = if todo.editing {Span::from(" ").bg(Color::White)} else {Span::raw("")};
+        let todo_line = Line::from(vec![Span::raw(status_string), todo_span, cursor]);
         if todo.selected && !todo.editing{
             text.push(todo_line.style(Style::new().add_modifier(Modifier::SLOW_BLINK)));
         }

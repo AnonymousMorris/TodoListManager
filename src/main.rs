@@ -118,6 +118,12 @@ fn main() -> Result<()> {
                                     }
                                     app.refresh_normal_selection();
                                 }
+                                KeyCode::Char('J') => {
+                                    app.move_down();
+                                },
+                                KeyCode::Char('K') => {
+                                    app.move_up();
+                                },
                                 _ => {},
                             }
                         }
@@ -130,7 +136,46 @@ fn main() -> Result<()> {
                                 },
                                 KeyCode::Char('v') => {
                                     app.toggle_visual();
+                                    app.refresh_normal_selection();
                                 }
+                                KeyCode::Char('d') => {
+                                    app.delete();
+                                }
+                                KeyCode::Char('q') => {
+                                    break;
+                                }
+                                KeyCode::Char('j') => {
+                                    if let Some(line_num) = app.line_num{
+                                        if line_num < app.todos.num - 1 {
+                                            app.line_num = Some(line_num + 1);
+                                            app.refresh_visual_selection();
+                                        }
+                                    }
+                                    else {
+                                        if app.todos.num > 0 {
+                                            app.line_num = Some(0);
+                                            app.refresh_visual_selection();
+                                        }
+                                        if app.visual_begin.is_none() {
+                                            app.visual_begin = app.line_num;
+                                        }
+                                    }
+                                }
+                                KeyCode::Char('k') => {
+                                    if let Some(line_num) = app.line_num{
+                                        if line_num > 0 {
+                                            app.line_num = Some(line_num - 1);
+                                            app.refresh_visual_selection();
+                                        }
+                                    }
+                                }
+                                KeyCode::Char('J') => {
+                                    app.visual_move_down();
+                                }
+                                KeyCode::Char('K') => {
+                                    app.visual_move_up();
+                                }
+
                                 _ => {},
                             }
                         }
