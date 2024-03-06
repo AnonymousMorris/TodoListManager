@@ -29,6 +29,8 @@ fn main() -> Result<()> {
     let mut terminal = Terminal::new(backend)?;
     terminal.clear()?;
 
+    let mut app = config::retrieve();
+    /*
     let mut app = App::new();
     let todo1 = Todo {
         selected: false,
@@ -56,6 +58,7 @@ fn main() -> Result<()> {
     app.todos.add_todo(todo3, 2);
     app.toggle_completetion();
     app.todos.move_todo(2, 0);
+    */
     app.toggle_todo_editing();
     loop{
         let _ = terminal.draw(|f| {ui(f, &app);});
@@ -68,16 +71,17 @@ fn main() -> Result<()> {
                             if key.modifiers == event::KeyModifiers::SHIFT {
                                 match key.code {
                                     KeyCode::Char('J') => {
-                                        app.move_down();
+                                        app.move_todo_down();
                                     },
                                     KeyCode::Char('K') => {
-                                        app.move_up();
+                                        app.move_todo_up();
                                     },
                                     _ => {},
                                 }
                             }
                             match key.code {
                                 KeyCode::Char('q') => {
+                                    config::save(&app);
                                     break;
                                 }, 
                                 KeyCode::Char('x') => {
@@ -102,28 +106,10 @@ fn main() -> Result<()> {
                                     app = config::retrieve();
                                 }
                                 KeyCode::Char('j') => {
-                                    if let Some(line_num) = app.line_num{
-                                        if line_num < app.todos.num - 1 {
-                                            app.line_num = Some(line_num + 1);
-                                        }
-                                    }
-                                    else {
-                                        if app.todos.num > 0 {
-                                            app.line_num = Some(0);
-                                        }
-                                    }
-                                    app.refresh_normal_selection();
+                                    app.move_down();
                                 }
                                 KeyCode::Char('k') => {
-                                    if let Some(line_num) = app.line_num{
-                                        if line_num > 0 {
-                                            app.line_num = Some(line_num - 1);
-                                        }
-                                        else if line_num == 0 {
-                                            app.line_num = None;
-                                        }
-                                    }
-                                    app.refresh_normal_selection();
+                                    app.move_up();
                                 }
                                 KeyCode::Char('J') => {
                                     app.move_down();
@@ -152,35 +138,16 @@ fn main() -> Result<()> {
                                     break;
                                 }
                                 KeyCode::Char('j') => {
-                                    if let Some(line_num) = app.line_num{
-                                        if line_num < app.todos.num - 1 {
-                                            app.line_num = Some(line_num + 1);
-                                            app.refresh_visual_selection();
-                                        }
-                                    }
-                                    else {
-                                        if app.todos.num > 0 {
-                                            app.line_num = Some(0);
-                                            app.refresh_visual_selection();
-                                        }
-                                        if app.visual_begin.is_none() {
-                                            app.visual_begin = app.line_num;
-                                        }
-                                    }
-                                }
-                                KeyCode::Char('k') => {
-                                    if let Some(line_num) = app.line_num{
-                                        if line_num > 0 {
-                                            app.line_num = Some(line_num - 1);
-                                            app.refresh_visual_selection();
-                                        }
-                                    }
-                                }
-                                KeyCode::Char('J') => {
                                     app.visual_move_down();
                                 }
-                                KeyCode::Char('K') => {
+                                KeyCode::Char('k') => {
                                     app.visual_move_up();
+                                }
+                                KeyCode::Char('J') => {
+                                    app.visual_move_todo_down();
+                                }
+                                KeyCode::Char('K') => {
+                                    app.visual_move_todo_up();
                                 }
 
                                 _ => {},
@@ -201,12 +168,16 @@ fn main() -> Result<()> {
                                 },
                                 KeyCode::Backspace => {
                                     if let Some(todo_idx) = app.line_num{
-                                        app.todos.todos[todo_idx].value.pop();
+                                        if let Some(todolist) = app.current_todolist() {
+                                            todolist.todos[todo_idx].value.pop();
+                                        }
                                     }
                                 },
                                 KeyCode::Char(val) => {
                                     if let Some(todo_idx) = app.line_num{
-                                        app.todos.todos[todo_idx].value.push(val);
+                                        if let Some(todolist) = app.current_todolist() {
+                                            todolist.todos[todo_idx].value.push(val);
+                                        }
                                     }
                                 },
                                 _ => {}

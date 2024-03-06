@@ -4,6 +4,7 @@ use std::fs;
 use home;
 
 use crate::app::App;
+use crate::app::*;
 
 pub fn save(app: &App) {
     let home = match home::home_dir() {
@@ -42,7 +43,19 @@ pub fn retrieve() -> App {
         Err(e) => panic!("could not read file ~/.todo-list-manager with error: {}", e),
         Ok(result) => result,
     };
-    let app = serde_json::from_str(&todos).unwrap();
+    let mut app: App = match serde_json::from_str(&todos) {
+        Ok(data) => data,
+        Err(_) => App::new(),
+    };
+    app.mode = Mode::Normal;
+    app.line_num = None;
+    app.visual_begin = None;
+    for todolist in &mut app.todolists {
+        for todo in &mut todolist.todos {
+            todo.selected = false;
+            todo.editing = false;
+        }
+    }
     app
 }
 

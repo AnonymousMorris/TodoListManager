@@ -9,19 +9,22 @@ pub fn ui (f: &mut Frame, app: & App) {
             Constraint::Fill(1),
         ])
         .split(f.size());
+    let mut constraints: Vec<Constraint> = vec![];
+    constraints = app.todolists.iter().map( |_| Constraint::Max(20)).collect();
     let pane = Layout::default()
         .direction(Direction::Horizontal)
-        .constraints([
-            Constraint::Percentage(20),
-            Constraint::Percentage(80),
-        ])
+        .constraints(constraints)
         .split(head[1]);
     let title = render_title(app);
-    // let hello_world = render_hello_world(app);
-    let list = render_list(app);
     f.render_widget(title, head[0]);
-    //f.render_widget( hello_world, pane[0]);
-    f.render_widget(list, pane[0])
+
+    let mut list: Vec<Paragraph> = vec![];
+    for i in 0..app.todolists.len() {
+        list.push(render_list(app, i));
+    }
+    for i in 0 ..app.todolists.len() {
+        f.render_widget(&list[i], pane[i]);
+    }
 }
 fn render_title(app: &App) -> Paragraph {
     let title_block = Block::bordered();
@@ -30,10 +33,11 @@ fn render_title(app: &App) -> Paragraph {
     let title = Paragraph::new(title_text).centered().block(title_block);
     title
 }
-fn render_list(app: &App) -> Paragraph {
+fn render_list(app: &App, todolist_idx: usize) -> Paragraph {
     let mut text = Vec::new();
     let block = Block::bordered().title_top(Line::raw("My Todos").centered());
-    for todo in &app.todos.todos {
+    let todolist = &app.todolists[todolist_idx];
+    for todo in &todolist.todos {
         let status_string = if todo.completed {" [x] "} else {" [ ] "};
         let mut todo_style = Style::new();
         if todo.completed {
@@ -53,5 +57,6 @@ fn render_list(app: &App) -> Paragraph {
         }
     }
     let list = Paragraph::new(text).left_aligned().wrap(Wrap{trim: false}).block(block);
+    
     list
 }
