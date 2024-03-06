@@ -94,8 +94,8 @@ impl App {
             mode: Mode::Normal,
             line_num: None,
             visual_begin: None,
-            current_todolist: None,
-            todolists: Vec::new(),
+            current_todolist: Some(0),
+            todolists: vec![TodoList{todos : vec![]}],
         }
     }
     pub fn current_todolist(&mut self) -> Option<&mut TodoList> {

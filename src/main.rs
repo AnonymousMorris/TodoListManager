@@ -29,7 +29,10 @@ fn main() -> Result<()> {
     let mut terminal = Terminal::new(backend)?;
     terminal.clear()?;
 
-    let mut app = config::retrieve();
+    let mut app = match config::retrieve() {
+        Err(_) => App::new(),
+        Ok(app) => app,
+    };
     /*
     let mut app = App::new();
     let todo1 = Todo {
@@ -101,9 +104,6 @@ fn main() -> Result<()> {
                                 }
                                 KeyCode::Char('s') => {
                                     config::save(&app);
-                                }
-                                KeyCode::Char('r') => {
-                                    app = config::retrieve();
                                 }
                                 KeyCode::Char('j') => {
                                     app.move_down();

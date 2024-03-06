@@ -26,7 +26,7 @@ pub fn save(app: &App) {
         Ok(_) => ()
     }
 }
-pub fn retrieve() -> App {
+pub fn retrieve() -> std::result::Result<App, std::io::Error> {
     let home = match home::home_dir() {
             Some(dir) => dir,
             None => panic!("error getting home directory"),
@@ -34,13 +34,13 @@ pub fn retrieve() -> App {
     let app_path = home.join(".todo-list-manager");
     if !app_path.exists() {
         match fs::create_dir(&app_path){
-            Err(e) => panic!("failed to create dir with error: {}", e),
-            Ok(_) => return App::new(),
+            Err(e) => return Err(e),
+            Ok(_) => return Ok(App::new()),
         }
     }
     let file_path = app_path.join("todos.json");
     let todos = match fs::read_to_string(file_path) {
-        Err(e) => panic!("could not read file ~/.todo-list-manager with error: {}", e),
+        Err(e) => return Err(e),
         Ok(result) => result,
     };
     let mut app: App = match serde_json::from_str(&todos) {
@@ -56,7 +56,7 @@ pub fn retrieve() -> App {
             todo.editing = false;
         }
     }
-    app
+    Ok(app)
 }
 
 /*

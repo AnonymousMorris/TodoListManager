@@ -10,7 +10,7 @@ pub fn ui (f: &mut Frame, app: & App) {
         ])
         .split(f.size());
     let mut constraints: Vec<Constraint> = vec![];
-    constraints = app.todolists.iter().map( |_| Constraint::Max(20)).collect();
+    constraints = app.todolists.iter().map( |_| Constraint::Max(40)).collect();
     let pane = Layout::default()
         .direction(Direction::Horizontal)
         .constraints(constraints)
