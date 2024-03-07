@@ -32,35 +32,6 @@ fn main() -> Result<()> {
         Err(_) => App::new(),
         Ok(app) => app,
     };
-    /*
-    let mut app = App::new();
-    let todo1 = Todo {
-        selected: false,
-        value: String::from("1. hello morris"),
-        completed: true,
-        description: String::from("hi"),
-        editing: false,
-    };
-    let todo2 = Todo {
-        selected: false,
-        value: String::from("2. finish this app?"),
-        completed: false,
-        description: String::from("hi"),
-        editing: false,
-    };
-    let todo3 = Todo {
-        selected: false,
-        value: String::from("3. finish this app?"),
-        completed: true,
-        description: String::from("hi"),
-        editing: false,
-    };
-    app.todos.add_todo(todo1, 0);
-    app.todos.add_todo(todo2, 1);
-    app.todos.add_todo(todo3, 2);
-    app.toggle_completetion();
-    app.todos.move_todo(2, 0);
-    */
     app.toggle_todo_editing();
     loop{
         let _ = terminal.draw(|f| {ui(f, &app);});
@@ -70,17 +41,6 @@ fn main() -> Result<()> {
                 match app.mode {
                     app::Mode::Normal => {
                         if key.kind == KeyEventKind::Press{
-                            if key.modifiers == event::KeyModifiers::SHIFT {
-                                match key.code {
-                                    KeyCode::Char('J') => {
-                                        app.move_todo_down();
-                                    },
-                                    KeyCode::Char('K') => {
-                                        app.move_todo_up();
-                                    },
-                                    _ => {},
-                                }
-                            }
                             match key.code {
                                 KeyCode::Char('q') => {
                                     config::save(&app);
@@ -124,10 +84,16 @@ fn main() -> Result<()> {
                                     app.move_right();
                                 }
                                 KeyCode::Char('J') => {
-                                    app.move_down();
+                                    app.move_todo_down();
                                 },
                                 KeyCode::Char('K') => {
-                                    app.move_up();
+                                    app.move_todo_up();
+                                },
+                                KeyCode::Char('H') => {
+                                    app.move_todolist_left();
+                                },
+                                KeyCode::Char('L') => {
+                                    app.move_todolist_right();
                                 },
                                 _ => {},
                             }

@@ -109,7 +109,8 @@ impl App {
     pub fn add_todo(&mut self) {
         if let Some(line_num) = self.line_num{
             if let Some(todolist) = self.current_todolist(){
-                todolist.add_todo(Todo::new(), line_num);
+                todolist.add_todo(Todo::new(), line_num + 1);
+                self.move_down();
                 self.refresh_normal_selection();
                 self.toggle_editing();
             }
@@ -137,12 +138,12 @@ impl App {
             return;
         }
         if a < b {
-            for i in a .. b{
+            for i in a..b{
                 self.todolists.swap(i, i+1);
             }
         }
         else {
-            for i in (a..b).rev() {
+            for i in (b..a).rev() {
                 self.todolists.swap(i, i+1);
             }
         }
@@ -151,6 +152,11 @@ impl App {
         if let Some(todolist_idx) = self.current_todolist {
             if todolist_idx > 0 {
                 self.current_todolist = Some(todolist_idx - 1);
+            }
+        }
+        if let Some(line_num) = self.line_num {
+            if let Some(todolist) = self.current_todolist(){
+                self.line_num = Some( cmp::min(line_num, todolist.todos.len()) );
             }
         }
     }
@@ -163,6 +169,29 @@ impl App {
         else {
             if self.todolists.len() > 0 {
                 self.current_todolist = Some(0);
+            }
+        }
+        if let Some(line_num) = self.line_num {
+            if let Some(todolist) = self.current_todolist(){
+                self.line_num = Some( cmp::min(line_num, todolist.todos.len()) );
+            }
+        }
+    }
+    pub fn move_todolist_left(&mut self) {
+        if let Some(todolist_idx) = self.current_todolist {
+            if todolist_idx > 0 {
+                print!("debug {}, {}", todolist_idx, todolist_idx - 1);
+                self.move_todolist(todolist_idx, todolist_idx - 1);
+                self.move_left();
+            }
+        }
+    }
+    pub fn move_todolist_right (&mut self) {
+        if let Some(todolist_idx) = self.current_todolist {
+            if todolist_idx < self.todolists.len() - 1 {
+                print!("debug {}, {}", todolist_idx, todolist_idx + 1);
+                self.move_todolist(todolist_idx, todolist_idx + 1);
+                self.move_right();
             }
         }
     }
