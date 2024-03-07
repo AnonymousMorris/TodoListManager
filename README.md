@@ -2,8 +2,6 @@ This app is operated with purely the keyboard with keybindings heavily borrowed 
 ### Modes
 Similar to vim, there is a Normal, Insert, and Visual mode. You can move around in normal mode, then enter insert mode when you want to edit a todo item. Visual mode will let you select multiple todo items and let you perform actions on them all at the same time.
 
-note: visual mode is not implemented as of yet.
-
 | keys | effect |
 | --------------- | ---------------- |
 | i               | enter insert mode|
@@ -23,9 +21,13 @@ note: visual mode is not implemented as of yet.
 | --------------- | ---------------- |
 | a | create todo |
 | d | delete todo |
+| n | create todolist |
+| shift + d | delete todolist |
 
 ### Move todos
 | keys | action |
 | --------------- | ---------------- |
 | shift + j | move todo down |
 | shift + k | move todo up |
+| shift + h | move todolist left |
+| shift + l | move todolist right |
