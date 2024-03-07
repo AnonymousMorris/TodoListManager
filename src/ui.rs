@@ -1,4 +1,5 @@
 use crate::app::App;
+use crate::app::Mode;
 use ratatui::prelude::*;
 use ratatui::widgets::{Paragraph, Block, Wrap};
 pub fn ui (f: &mut Frame, app: & App) {
@@ -35,7 +36,19 @@ fn render_title(app: &App) -> Paragraph {
 }
 fn render_list(app: &App, todolist_idx: usize) -> Paragraph {
     let mut text = Vec::new();
-    let block = Block::bordered().title_top(Line::raw("My Todos").centered());
+    let mut cursor = Span::raw("");
+    if let Some(idx) = app.current_todolist{
+        if idx == todolist_idx && app.mode == Mode::Insert && app.line_num == None{
+            cursor = {Span::from(" ").bg(Color::White)}; 
+        }
+    }
+    let block_line = Line::from(vec![Span::raw(& app.todolists[todolist_idx].title), cursor]);
+    let mut block = Block::bordered().title_top(block_line);
+    if let Some(idx) = app.current_todolist{
+        if idx == todolist_idx {
+            block = block.border_style(Style::new().yellow());
+        }
+    }
     let todolist = &app.todolists[todolist_idx];
     for todo in &todolist.todos {
         let status_string = if todo.completed {" [x] "} else {" [ ] "};

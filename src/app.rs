@@ -5,6 +5,7 @@ use std::cmp;
 #[derive(Serialize, Deserialize)]
 pub struct TodoList {
     pub todos: Vec<Todo>,
+    pub title: String,
 }
 #[derive(Serialize, Deserialize)]
 pub struct App {
@@ -23,7 +24,7 @@ pub struct Todo {
     pub editing: bool,
 }
 #[allow(dead_code)]
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, PartialEq)]
 pub enum Mode {
     Insert, 
     Normal,
@@ -53,6 +54,7 @@ impl TodoList{
     fn new() -> TodoList {
         TodoList{
             todos: Vec::new(),
+            title: String::from("Todo List"),
         }
     }
     pub fn add_todo(&mut self, todo: Todo, pos:usize) {
@@ -95,7 +97,7 @@ impl App {
             line_num: None,
             visual_begin: None,
             current_todolist: Some(0),
-            todolists: vec![TodoList{todos : vec![]}],
+            todolists: vec![TodoList::new()],
         }
     }
     pub fn current_todolist(&mut self) -> Option<&mut TodoList> {
@@ -118,6 +120,49 @@ impl App {
                 self.line_num = Some(0);
                 self.refresh_normal_selection();
                 self.toggle_editing();
+            }
+        }
+    }
+    pub fn add_todolist(&mut self) {
+        if let Some(todolist_idx) = self.current_todolist{
+            self.todolists.push(TodoList::new() );
+            self.move_todolist(todolist_idx, self.todolists.len() - 1);
+        }
+    }
+    pub fn move_todolist(&mut self, a: usize, b: usize) {
+        if a >= self.todolists.len() || b >= self.todolists.len() {
+            panic!("tried to swap a todolist to out of bound");
+        }
+        if a == b {
+            return;
+        }
+        if a < b {
+            for i in a .. b{
+                self.todolists.swap(i, i+1);
+            }
+        }
+        else {
+            for i in (a..b).rev() {
+                self.todolists.swap(i, i+1);
+            }
+        }
+    }
+    pub fn move_left (&mut self) {
+        if let Some(todolist_idx) = self.current_todolist {
+            if todolist_idx > 0 {
+                self.current_todolist = Some(todolist_idx - 1);
+            }
+        }
+    }
+    pub fn move_right (&mut self) {
+        if let Some(todolist_idx) = self.current_todolist {
+            if todolist_idx < self.todolists.len() - 1 {
+                self.current_todolist = Some(todolist_idx + 1);
+            }
+        }
+        else {
+            if self.todolists.len() > 0 {
+                self.current_todolist = Some(0);
             }
         }
     }
@@ -228,6 +273,18 @@ impl App {
                         self.visual_begin = Some(visual_begin + 1);
                     }
                 }
+            }
+        }
+    }
+    pub fn delete_todolist(&mut self) {
+        if let Some(todolist_idx) = self.current_todolist{
+            self.move_todolist(todolist_idx, self.todolists.len()-1);
+            self.todolists.pop();
+            if self.todolists.len() == 0 {
+                self.current_todolist = None;
+            }
+            else {
+                self.current_todolist = Some(cmp::min(self.todolists.len() -1, todolist_idx));
             }
         }
     }

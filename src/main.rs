@@ -96,6 +96,13 @@ fn main() -> Result<()> {
                                 KeyCode::Char('a') => {
                                     app.add_todo();
                                 },
+                                KeyCode::Char('n') => {
+                                    app.add_todolist();
+                                },
+                                KeyCode::Char('D') => {
+                                    // add a warning to warn user about deleting a todolist
+                                    app.delete_todolist();
+                                },
                                 KeyCode::Char('i') => {
                                     app.toggle_editing();
                                 }
@@ -110,6 +117,12 @@ fn main() -> Result<()> {
                                 }
                                 KeyCode::Char('k') => {
                                     app.move_up();
+                                }
+                                KeyCode::Char('h') => {
+                                    app.move_left();
+                                }
+                                KeyCode::Char('l') => {
+                                    app.move_right();
                                 }
                                 KeyCode::Char('J') => {
                                     app.move_down();
