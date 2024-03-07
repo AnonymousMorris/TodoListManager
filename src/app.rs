@@ -2,6 +2,8 @@ use serde::{Deserialize, Serialize};
 use core::fmt;
 use std::cmp;
 
+use crate::config;
+
 #[derive(Serialize, Deserialize)]
 pub struct TodoList {
     pub todos: Vec<Todo>,
@@ -14,6 +16,7 @@ pub struct App {
     pub todolists: Vec<TodoList>,
     pub line_num: Option<usize>,
     pub visual_begin: Option<usize>,
+    pub command: Command,
 }
 #[derive(Serialize, Deserialize)]
 pub struct Todo {
@@ -23,12 +26,16 @@ pub struct Todo {
     pub description: String,
     pub editing: bool,
 }
-#[allow(dead_code)]
+#[derive(Serialize, Deserialize)]
+pub struct Command {
+    pub value: String,
+}
 #[derive(Serialize, Deserialize, PartialEq)]
 pub enum Mode {
     Insert, 
     Normal,
     Visual,
+    Command,
 }
 impl fmt::Display for Mode {
     fn fmt(&self, f : &mut fmt::Formatter) -> fmt::Result{
@@ -36,6 +43,7 @@ impl fmt::Display for Mode {
             Mode::Insert => write!(f, "Insert Mode"),
             Mode::Normal => write!(f, "Normal Mode"),
             Mode::Visual => write!(f, "Visual Mode"),
+            Mode::Command => write!(f, "Command Mode"),
         }
     }
 }
@@ -48,6 +56,11 @@ impl Todo {
             description: String::new(),
             editing: false,
         }
+    }
+}
+impl Command {
+    fn new() -> Command {
+        return Command {value: String::new()};
     }
 }
 impl TodoList{
@@ -98,6 +111,7 @@ impl App {
             visual_begin: None,
             current_todolist: Some(0),
             todolists: vec![TodoList::new()],
+            command: Command::new(),
         }
     }
     pub fn current_todolist(&mut self) -> Option<&mut TodoList> {
@@ -125,9 +139,13 @@ impl App {
         }
     }
     pub fn add_todolist(&mut self) {
+        self.todolists.push(TodoList::new());
         if let Some(todolist_idx) = self.current_todolist{
-            self.todolists.push(TodoList::new() );
-            self.move_todolist(todolist_idx, self.todolists.len() - 1);
+            self.move_todolist(self.todolists.len() - 1, todolist_idx + 1);
+            self.current_todolist = Some(todolist_idx + 1);
+        }
+        else {
+            self.current_todolist = Some(0);
         }
     }
     pub fn move_todolist(&mut self, a: usize, b: usize) {
@@ -148,17 +166,25 @@ impl App {
             }
         }
     }
+    pub fn refresh_line_num (&mut self) {
+        if let Some(line_num) = self.line_num {
+            if let Some(todolist) = self.current_todolist(){
+                if todolist.todos.len() == 0 {
+                    self.line_num = None;
+                }
+                else {
+                    self.line_num = Some( cmp::min(line_num, todolist.todos.len()) );
+                }
+            }
+        }
+    }
     pub fn move_left (&mut self) {
         if let Some(todolist_idx) = self.current_todolist {
             if todolist_idx > 0 {
                 self.current_todolist = Some(todolist_idx - 1);
             }
         }
-        if let Some(line_num) = self.line_num {
-            if let Some(todolist) = self.current_todolist(){
-                self.line_num = Some( cmp::min(line_num, todolist.todos.len()) );
-            }
-        }
+        self.refresh_line_num();
     }
     pub fn move_right (&mut self) {
         if let Some(todolist_idx) = self.current_todolist {
@@ -171,11 +197,7 @@ impl App {
                 self.current_todolist = Some(0);
             }
         }
-        if let Some(line_num) = self.line_num {
-            if let Some(todolist) = self.current_todolist(){
-                self.line_num = Some( cmp::min(line_num, todolist.todos.len()) );
-            }
-        }
+        self.refresh_line_num();
     }
     pub fn move_todolist_left(&mut self) {
         if let Some(todolist_idx) = self.current_todolist {
@@ -339,6 +361,35 @@ impl App {
         self.mode = Mode::Normal;
         self.refresh_normal_selection();
     }
+    pub fn execute(&mut self) {
+        match &self.command.value as &str {
+            ":w" => {
+                config::save(self);
+                self.command.value = String::new();
+            },
+            ":clean" => {
+                self.clean();
+                self.command.value = String::new();
+            },
+            _ => (),
+        }
+        self.mode = Mode::Normal;
+    }
+    pub fn clean(&mut self) {
+        for todolist in &mut self.todolists {
+            let mut i = 0;
+            while i < todolist.todos.len() {
+                if todolist.todos[i].completed {
+                    todolist.delete(i);
+                    continue;
+                }
+                i += 1;
+            }
+        }
+        self.refresh_line_num();
+        self.mode = Mode::Normal;
+        self.command.value = String::new();
+    }
     pub fn toggle_editing (&mut self) {
         match self.mode {
             Mode::Normal => {
@@ -349,7 +400,7 @@ impl App {
                 self.mode = Mode::Normal;
                 self.toggle_todo_editing();
             },
-            Mode::Visual => {},
+            _ => {},
         }
     } 
     pub fn toggle_visual (&mut self) {
@@ -364,7 +415,21 @@ impl App {
                     self.visual_begin = Some(line_num);
                 }
             },
-            Mode::Insert => {}
+            Mode::Insert => {},
+            Mode::Command => {},
+        }
+    }
+    pub fn toggle_command (&mut self) {
+        match self.mode {
+            Mode::Normal => {
+                self.mode = Mode::Command;
+                self.command.value = String::from(":");
+            },
+            Mode::Visual => {
+                self.mode = Mode::Command;
+                self.command.value = String::from(":");
+            }
+            _ => (),
         }
     }
     pub fn refresh_normal_selection (&mut self) {

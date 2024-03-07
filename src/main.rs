@@ -58,6 +58,9 @@ fn main() -> Result<()> {
                                 KeyCode::Char('n') => {
                                     app.add_todolist();
                                 },
+                                KeyCode::Char(':') => {
+                                    app.toggle_command();
+                                },
                                 KeyCode::Char('D') => {
                                     // add a warning to warn user about deleting a todolist
                                     app.delete_todolist();
@@ -109,10 +112,14 @@ fn main() -> Result<()> {
                                     app.toggle_visual();
                                     app.refresh_normal_selection();
                                 }
+                                KeyCode::Char(':') => {
+                                    app.toggle_command();
+                                },
                                 KeyCode::Char('d') => {
                                     app.delete();
                                 }
                                 KeyCode::Char('q') => {
+                                    config::save(& app);
                                     break;
                                 }
                                 KeyCode::Char('j') => {
@@ -172,6 +179,22 @@ fn main() -> Result<()> {
                             }
                         }
                     },
+                    app::Mode::Command => {
+                        if key.kind == KeyEventKind::Press {
+                            match key.code {
+                                KeyCode::Enter => {
+                                    app.execute();
+                                },
+                                KeyCode::Backspace => {
+                                    app.command.value.pop();
+                                },
+                                KeyCode::Char(val) => {
+                                    app.command.value.push(val);
+                                },
+                                _ => {}
+                            }
+                        }
+                    }
                 }
             }
         }

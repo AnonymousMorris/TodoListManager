@@ -1,6 +1,7 @@
 use crate::app::App;
 use crate::app::Mode;
 use ratatui::prelude::*;
+use ratatui::widgets::BorderType;
 use ratatui::widgets::{Paragraph, Block, Wrap};
 pub fn ui (f: &mut Frame, app: & App) {
     let head = Layout::default()
@@ -8,6 +9,7 @@ pub fn ui (f: &mut Frame, app: & App) {
         .constraints([
             Constraint::Max(5),
             Constraint::Fill(1),
+            Constraint::Max(3),
         ])
         .split(f.size());
     let constraints: Vec<Constraint> = app.todolists.iter().map( |_| Constraint::Max(40)).collect();
@@ -16,7 +18,9 @@ pub fn ui (f: &mut Frame, app: & App) {
         .constraints(constraints)
         .split(head[1]);
     let title = render_title(app);
+    let command = render_command(app);
     f.render_widget(title, head[0]);
+    f.render_widget(command, head[2]);
 
     let mut list: Vec<Paragraph> = vec![];
     for i in 0..app.todolists.len() {
@@ -25,6 +29,12 @@ pub fn ui (f: &mut Frame, app: & App) {
     for i in 0 ..app.todolists.len() {
         f.render_widget(&list[i], pane[i]);
     }
+}
+fn render_command(app: &App) -> Paragraph {
+    let command_block = Block::bordered().border_type(BorderType::Plain);
+    let cursor = if app.mode == Mode::Command {Span::from(" ").bg(Color::White)} else { Span::raw("") };
+    let command_line = Line::from(vec![Span::from(& app.command.value), cursor]);
+    return Paragraph::new(command_line).left_aligned().block(command_block);
 }
 fn render_title(app: &App) -> Paragraph {
     let title_block = Block::bordered();
@@ -42,7 +52,7 @@ fn render_list(app: &App, todolist_idx: usize) -> Paragraph {
         }
     }
     let block_line = Line::from(vec![Span::raw(& app.todolists[todolist_idx].title), cursor]);
-    let mut block = Block::bordered().title_top(block_line);
+    let mut block = Block::bordered().title_top(block_line).title_alignment(Alignment::Center);
     if let Some(idx) = app.current_todolist{
         if idx == todolist_idx {
             block = block.border_style(Style::new().yellow());
