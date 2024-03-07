@@ -46,17 +46,17 @@ fn render_title(app: &App) -> Paragraph {
 fn render_list(app: &App, todolist_idx: usize) -> Paragraph {
     let mut text = Vec::new();
     let mut cursor = Span::raw("");
-    if let Some(idx) = app.current_todolist{
-        if idx == todolist_idx && app.mode == Mode::Insert && app.line_num == None{
-            cursor = Span::from(" ").bg(Color::White); 
-        }
+    let mut todolist_is_selected = false;
+    if let Some(idx) = app.current_todolist {
+        todolist_is_selected = idx == todolist_idx;
+    }
+    if todolist_is_selected && app.mode == Mode::Insert && app.line_num == None{
+        cursor = Span::from(" ").bg(Color::White); 
     }
     let block_line = Line::from(vec![Span::raw(& app.todolists[todolist_idx].title), cursor]);
     let mut block = Block::bordered().title_top(block_line).title_alignment(Alignment::Center);
-    if let Some(idx) = app.current_todolist{
-        if idx == todolist_idx {
-            block = block.border_style(Style::new().yellow());
-        }
+    if todolist_is_selected {
+        block = block.border_style(Style::new().yellow());
     }
     let todolist = &app.todolists[todolist_idx];
     for todo in &todolist.todos {
@@ -71,7 +71,7 @@ fn render_list(app: &App, todolist_idx: usize) -> Paragraph {
         let todo_span = Span::raw(& todo.value).style(todo_style);
         let cursor = if todo.editing {Span::from(" ").bg(Color::White)} else {Span::raw("")};
         let todo_line = Line::from(vec![Span::raw(status_string), todo_span, cursor]);
-        if todo.selected && !todo.editing{
+        if todolist_is_selected && todo.selected && !todo.editing{
             text.push(todo_line.style(Style::new().add_modifier(Modifier::SLOW_BLINK)));
         }
         else{

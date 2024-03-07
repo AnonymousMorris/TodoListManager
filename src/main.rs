@@ -183,7 +183,12 @@ fn main() -> Result<()> {
                         if key.kind == KeyEventKind::Press {
                             match key.code {
                                 KeyCode::Enter => {
-                                    app.execute();
+                                    match &app.command.value as &str{
+                                        ":q" => {
+                                            break;
+                                        },
+                                        _ => app.execute(),
+                                    }
                                 },
                                 KeyCode::Backspace => {
                                     app.command.value.pop();
