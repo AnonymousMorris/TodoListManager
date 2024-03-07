@@ -338,13 +338,6 @@ impl App {
             Mode::Insert => {}
         }
     }
-    pub fn toggle_todo_select (&mut self) {
-        if let Some(line_num) = self.line_num {
-            if let Some(todolist) = self.current_todolist() {
-                todolist.todos[line_num].selected ^= true;
-            }
-        }
-    }
     pub fn refresh_normal_selection (&mut self) {
         if let Some(line_num) = self.line_num {
             if let Some(todolist) = self.current_todolist() {

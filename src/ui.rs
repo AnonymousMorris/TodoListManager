@@ -10,8 +10,7 @@ pub fn ui (f: &mut Frame, app: & App) {
             Constraint::Fill(1),
         ])
         .split(f.size());
-    let mut constraints: Vec<Constraint> = vec![];
-    constraints = app.todolists.iter().map( |_| Constraint::Max(40)).collect();
+    let constraints: Vec<Constraint> = app.todolists.iter().map( |_| Constraint::Max(40)).collect();
     let pane = Layout::default()
         .direction(Direction::Horizontal)
         .constraints(constraints)
@@ -39,7 +38,7 @@ fn render_list(app: &App, todolist_idx: usize) -> Paragraph {
     let mut cursor = Span::raw("");
     if let Some(idx) = app.current_todolist{
         if idx == todolist_idx && app.mode == Mode::Insert && app.line_num == None{
-            cursor = {Span::from(" ").bg(Color::White)}; 
+            cursor = Span::from(" ").bg(Color::White); 
         }
     }
     let block_line = Line::from(vec![Span::raw(& app.todolists[todolist_idx].title), cursor]);

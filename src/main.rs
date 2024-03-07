@@ -1,4 +1,3 @@
-use app::Todo;
 use crossterm::{
     event::{self, KeyCode, KeyEventKind, KeyboardEnhancementFlags, PopKeyboardEnhancementFlags, PushKeyboardEnhancementFlags}, execute, terminal::{
         disable_raw_mode, enable_raw_mode, EnterAlternateScreen,
@@ -23,7 +22,7 @@ fn main() -> Result<()> {
             KeyboardEnhancementFlags::DISAMBIGUATE_ESCAPE_CODES
         )
     );
-    out.execute(EnterAlternateScreen);
+    let _ = stdout().execute(EnterAlternateScreen);
     enable_raw_mode()?;
     let backend = CrosstermBackend::new(out);
     let mut terminal = Terminal::new(backend)?;
@@ -185,11 +184,21 @@ fn main() -> Result<()> {
                                             todolist.todos[todo_idx].value.pop();
                                         }
                                     }
+                                    else {
+                                        if let Some(todolist) = app.current_todolist(){
+                                            todolist.title.pop();
+                                        }
+                                    }
                                 },
                                 KeyCode::Char(val) => {
                                     if let Some(todo_idx) = app.line_num{
                                         if let Some(todolist) = app.current_todolist() {
                                             todolist.todos[todo_idx].value.push(val);
+                                        }
+                                    }
+                                    else {
+                                        if let Some(todolist) = app.current_todolist() {
+                                            todolist.title.push(val);
                                         }
                                     }
                                 },
