@@ -7,6 +7,7 @@ Similar to vim, there is a Normal, Insert, and Visual mode. You can move around 
 | i               | enter insert mode|
 | \<esc\>, \<ctrl\> + [ | exit insert mode |
 | v               | toggle visual mode |
+| Enter           | exit insert mode |
 
 ### Movements
 | keys | movement |
@@ -36,8 +37,8 @@ Similar to vim, there is a Normal, Insert, and Visual mode. You can move around 
 Press ':' while in normal mode to enter command mode
 | keys | action |
 | --------------- | ---------------- |
-| w | save |
-| q | quit |
+| :w | save |
+| :q | quit |
+| :wq | write and quit |
 | clean | deletes all todos marked as completed |
 
-note: exiting with 'q' in normal mode will save before quit but :q in command would not. Use :q only if you don't want to save.
