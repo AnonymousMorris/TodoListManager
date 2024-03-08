@@ -173,7 +173,7 @@ impl App {
                     self.line_num = None;
                 }
                 else {
-                    self.line_num = Some( cmp::min(line_num, todolist.todos.len()) );
+                    self.line_num = Some( cmp::min(line_num, todolist.todos.len() - 1) );
                 }
             }
         }
@@ -181,23 +181,29 @@ impl App {
     pub fn move_left (&mut self) {
         if let Some(todolist_idx) = self.current_todolist {
             if todolist_idx > 0 {
+                self.toggle_selection();
                 self.current_todolist = Some(todolist_idx - 1);
+                self.refresh_line_num();
+                self.toggle_selection();
             }
         }
-        self.refresh_line_num();
     }
     pub fn move_right (&mut self) {
         if let Some(todolist_idx) = self.current_todolist {
             if todolist_idx < self.todolists.len() - 1 {
+                self.toggle_selection();
                 self.current_todolist = Some(todolist_idx + 1);
+                self.refresh_line_num();
+                self.toggle_selection();
             }
         }
         else {
             if self.todolists.len() > 0 {
                 self.current_todolist = Some(0);
+                self.refresh_line_num();
+                self.toggle_selection();
             }
         }
-        self.refresh_line_num();
     }
     pub fn move_todolist_left(&mut self) {
         if let Some(todolist_idx) = self.current_todolist {
@@ -474,7 +480,7 @@ impl App {
     pub fn toggle_todo_editing(&mut self) {
         if let Some(line_num) = self.line_num {
             if let Some(todolist) = self.current_todolist() {
-                todolist.todos[line_num].editing = !todolist.todos[line_num].editing;
+                todolist.todos[line_num].editing ^= true;
             }
         }
         else{
@@ -487,6 +493,13 @@ impl App {
                 if todo.selected {
                     todo.completed = !todo.completed;
                 }
+            }
+        }
+    }
+    pub fn toggle_selection (&mut self) {
+        if let Some(line_num) = self.line_num {
+            if let Some(todolist) = self.current_todolist() {
+                todolist.todos[line_num].selected ^= true;
             }
         }
     }

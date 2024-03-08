@@ -46,13 +46,11 @@ fn render_title(app: &App) -> Paragraph {
 fn render_list(app: &App, todolist_idx: usize) -> Paragraph {
     let mut text = Vec::new();
     let mut cursor = Span::raw("");
-    let mut todolist_is_selected = false;
-    if let Some(idx) = app.current_todolist {
-        todolist_is_selected = idx == todolist_idx;
-    }
+    let todolist_is_selected = app.current_todolist.is_some() && app.current_todolist.unwrap() == todolist_idx;
     if todolist_is_selected && app.mode == Mode::Insert && app.line_num == None{
         cursor = Span::from(" ").bg(Color::White); 
     }
+
     let block_line = Line::from(vec![Span::raw(& app.todolists[todolist_idx].title), cursor]);
     let mut block = Block::bordered().title_top(block_line).title_alignment(Alignment::Center);
     if todolist_is_selected {
@@ -79,6 +77,5 @@ fn render_list(app: &App, todolist_idx: usize) -> Paragraph {
         }
     }
     let list = Paragraph::new(text).left_aligned().wrap(Wrap{trim: false}).block(block);
-    
     list
 }
