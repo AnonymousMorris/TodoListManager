@@ -31,3 +31,13 @@ Similar to vim, there is a Normal, Insert, and Visual mode. You can move around 
 | shift + k | move todo up |
 | shift + h | move todolist left |
 | shift + l | move todolist right |
+
+### Command
+Press ':' while in normal mode to enter command mode
+| keys | action |
+| --------------- | ---------------- |
+| w | save |
+| q | quit |
+| clean | deletes all todos marked as completed |
+
+note: exiting with 'q' in normal mode will save before quit but :q in command would not. Use :q only if you don't want to save.
