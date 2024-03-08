@@ -32,7 +32,6 @@ fn main() -> Result<()> {
         Err(_) => App::new(),
         Ok(app) => app,
     };
-    app.toggle_todo_editing();
     loop{
         let _ = terminal.draw(|f| {ui(f, &app);});
         
@@ -184,6 +183,10 @@ fn main() -> Result<()> {
                             match key.code {
                                 KeyCode::Enter => {
                                     match &app.command.value as &str{
+                                        ":wq" => {
+                                            config::save(&app);
+                                            break;
+                                        },
                                         ":q" => {
                                             break;
                                         },
