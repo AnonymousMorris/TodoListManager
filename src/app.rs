@@ -181,7 +181,6 @@ impl App {
     pub fn move_left (&mut self) {
         if let Some(todolist_idx) = self.current_todolist {
             if todolist_idx > 0 {
-                self.toggle_selection();
                 self.current_todolist = Some(todolist_idx - 1);
                 self.refresh_line_num();
                 self.toggle_selection();
@@ -191,7 +190,6 @@ impl App {
     pub fn move_right (&mut self) {
         if let Some(todolist_idx) = self.current_todolist {
             if todolist_idx < self.todolists.len() - 1 {
-                self.toggle_selection();
                 self.current_todolist = Some(todolist_idx + 1);
                 self.refresh_line_num();
                 self.toggle_selection();
@@ -208,7 +206,6 @@ impl App {
     pub fn move_todolist_left(&mut self) {
         if let Some(todolist_idx) = self.current_todolist {
             if todolist_idx > 0 {
-                print!("debug {}, {}", todolist_idx, todolist_idx - 1);
                 self.move_todolist(todolist_idx, todolist_idx - 1);
                 self.move_left();
             }
@@ -217,7 +214,6 @@ impl App {
     pub fn move_todolist_right (&mut self) {
         if let Some(todolist_idx) = self.current_todolist {
             if todolist_idx < self.todolists.len() - 1 {
-                print!("debug {}, {}", todolist_idx, todolist_idx + 1);
                 self.move_todolist(todolist_idx, todolist_idx + 1);
                 self.move_right();
             }

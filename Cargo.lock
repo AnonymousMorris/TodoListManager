@@ -426,7 +426,7 @@ dependencies = [
 ]
 
 [[package]]
-name = "todo-manager"
+name = "todolist-manager"
 version = "0.1.0"
 dependencies = [
  "anyhow",

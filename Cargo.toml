@@ -1,7 +1,9 @@
 [package]
-name = "todo-manager"
+name = "todolist-manager"
 version = "0.1.0"
 edition = "2021"
+description = "A minimalistic terminal UI todolist manager that let's you create and organize multiple todolists with controls based on vim motions"
+license = "MIT"
 
 [dependencies]
 anyhow = "1.0.80"
@@ -10,3 +12,4 @@ home = "0.5.9"
 ratatui = "0.26.1"
 serde = { version = "1.0.197", features = ["derive"] }
 serde_json = "1.0.114"
+
