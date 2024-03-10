@@ -1,5 +1,5 @@
 use serde::{Deserialize, Serialize};
-use core::fmt;
+use core::{fmt};
 use std::cmp;
 
 use crate::config;
@@ -181,6 +181,7 @@ impl App {
     pub fn move_left (&mut self) {
         if let Some(todolist_idx) = self.current_todolist {
             if todolist_idx > 0 {
+                self.reset_todolist_selection(todolist_idx);
                 self.current_todolist = Some(todolist_idx - 1);
                 self.refresh_line_num();
                 self.toggle_selection();
@@ -190,6 +191,7 @@ impl App {
     pub fn move_right (&mut self) {
         if let Some(todolist_idx) = self.current_todolist {
             if todolist_idx < self.todolists.len() - 1 {
+                self.reset_todolist_selection(todolist_idx);
                 self.current_todolist = Some(todolist_idx + 1);
                 self.refresh_line_num();
                 self.toggle_selection();
@@ -497,6 +499,15 @@ impl App {
             if let Some(todolist) = self.current_todolist() {
                 todolist.todos[line_num].selected ^= true;
             }
+        }
+    }
+    fn reset_todolist_selection(&mut self, todolist_idx: usize) {
+        if todolist_idx >= self.todolists.len() {
+            panic!("tried to reset todolist selection on a todolist index that is out of bound" );
+        }
+        let todolist = &mut self.todolists[todolist_idx];
+        for todo in &mut todolist.todos {
+            todo.selected = false;
         }
     }
 }
