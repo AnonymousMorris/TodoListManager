@@ -143,6 +143,7 @@ impl App {
         if let Some(todolist_idx) = self.current_todolist{
             self.move_todolist(self.todolists.len() - 1, todolist_idx + 1);
             self.current_todolist = Some(todolist_idx + 1);
+            self.line_num = None;
         }
         else {
             self.current_todolist = Some(0);
