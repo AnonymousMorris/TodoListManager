@@ -1,6 +1,6 @@
 use serde::{Deserialize, Serialize};
-use core::{fmt};
-use std::cmp;
+use core::fmt;
+use std::cmp::{self, min};
 
 use crate::config;
 
@@ -341,6 +341,12 @@ impl App {
             }
             else {
                 self.current_todolist = Some(cmp::min(self.todolists.len() -1, todolist_idx));
+                if let Some(line_num) = self.line_num {
+                    self.line_num = Some(min(self.todolists[self.current_todolist.unwrap()].todos.len() - 1, line_num));
+                }
+                else {
+                    self.line_num = None;
+                }
             }
         }
     }
