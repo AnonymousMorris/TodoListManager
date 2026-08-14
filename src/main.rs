@@ -4,15 +4,14 @@ use crossterm::{
         LeaveAlternateScreen,
     }, ExecutableCommand
 };
+
+use todolist_manager::{
+    app::{App, Mode}, 
+    ui, config
+};
+
 use ratatui::prelude::{CrosstermBackend, Terminal};
 use std::io::{stdout, Result};
-mod app;
-mod ui;
-mod config;
-use crate::{
-    app::App,
-    ui::ui,
-};
 
 fn main() -> Result<()> {
     let mut out = stdout();
@@ -33,12 +32,12 @@ fn main() -> Result<()> {
         Ok(app) => app,
     };
     loop{
-        let _ = terminal.draw(|f| {ui(f, &app);});
+        let _ = terminal.draw(|f| {ui::ui(f, &app);});
         
         if event::poll(std::time::Duration::from_millis(200))? {
             if let event::Event::Key(key) = event::read()? {
                 match app.mode {
-                    app::Mode::Normal => {
+                    Mode::Normal => {
                         if key.kind == KeyEventKind::Press{
                             match key.code {
                                 KeyCode::Char('q') => {
@@ -46,28 +45,31 @@ fn main() -> Result<()> {
                                     break;
                                 }, 
                                 KeyCode::Char('x') => {
-                                    app.toggle_completetion();
+                                    app.toggle_completed();
                                 },
                                 KeyCode::Char('d') => {
-                                    app.delete();
+                                    app.delete_todo();
                                 },
-                                KeyCode::Char('a') => {
-                                    app.add_todo();
+                                KeyCode::Char('o') => {
+                                    app.create_todo();
                                 },
                                 KeyCode::Char('n') => {
-                                    app.add_todolist();
+                                    app.create_todolist();
                                 },
                                 KeyCode::Char(':') => {
                                     app.toggle_command();
                                 },
                                 KeyCode::Char('D') => {
-                                    // add a warning to warn user about deleting a todolist
+                                    // TODO: add a warning to warn user about deleting a todolist
                                     app.delete_todolist();
                                 },
                                 KeyCode::Char('i') => {
                                     app.toggle_editing();
                                 }
                                 KeyCode::Char('v') => {
+                                    app.toggle_visual();
+                                }
+                                KeyCode::Char('V') => {
                                     app.toggle_visual();
                                 }
                                 KeyCode::Char('s') => {
@@ -101,103 +103,85 @@ fn main() -> Result<()> {
                             }
                         }
                     },
-                    app::Mode::Visual => {
+                    Mode::Visual => {
                         if key.kind == KeyEventKind::Press{
                             match key.code {
+                                KeyCode::Char('q') => {
+                                    config::save(&app);
+                                    break;
+                                }, 
                                 KeyCode::Char('x') => {
-                                    app.toggle_completetion();
+                                    app.toggle_completed();
                                 },
-                                KeyCode::Char('v') => {
-                                    app.toggle_visual();
-                                    app.refresh_normal_selection();
-                                }
+                                KeyCode::Char('d') => {
+                                    app.delete_todo();
+                                },
                                 KeyCode::Char(':') => {
                                     app.toggle_command();
                                 },
-                                KeyCode::Char('d') => {
-                                    app.delete();
+                                KeyCode::Char('v') => {
+                                    app.toggle_visual();
                                 }
-                                KeyCode::Char('q') => {
-                                    config::save(& app);
-                                    break;
+                                KeyCode::Char('V') => {
+                                    app.toggle_visual();
+                                }
+                                KeyCode::Char('s') => {
+                                    config::save(&app);
                                 }
                                 KeyCode::Char('j') => {
-                                    app.visual_move_down();
+                                    app.move_down();
                                 }
                                 KeyCode::Char('k') => {
-                                    app.visual_move_up();
+                                    app.move_up();
                                 }
                                 KeyCode::Char('J') => {
-                                    app.visual_move_todo_down();
-                                }
+                                    app.move_todo_down();
+                                },
                                 KeyCode::Char('K') => {
-                                    app.visual_move_todo_up();
-                                }
-
+                                    app.move_todo_up();
+                                },
                                 _ => {},
                             }
                         }
                     },
-                    app::Mode::Insert => {
+                    Mode::Insert => {
                         if key.kind == KeyEventKind::Press{
                             if key.modifiers == event::KeyModifiers::CONTROL && key.code==KeyCode::Char('['){
                                 app.toggle_editing();
                             }
-                            match key.code {
-                                KeyCode::Esc => {
-                                    app.toggle_editing();
-                                },
-                                KeyCode::Enter => {
-                                    app.toggle_editing();
-                                },
-                                KeyCode::Backspace => {
-                                    if let Some(todo_idx) = app.line_num{
-                                        if let Some(todolist) = app.current_todolist() {
-                                            todolist.todos[todo_idx].value.pop();
-                                        }
-                                    }
-                                    else {
-                                        if let Some(todolist) = app.current_todolist(){
-                                            todolist.title.pop();
-                                        }
-                                    }
-                                },
-                                KeyCode::Char(val) => {
-                                    if let Some(todo_idx) = app.line_num{
-                                        if let Some(todolist) = app.current_todolist() {
-                                            todolist.todos[todo_idx].value.push(val);
-                                        }
-                                    }
-                                    else {
-                                        if let Some(todolist) = app.current_todolist() {
-                                            todolist.title.push(val);
-                                        }
-                                    }
-                                },
-                                _ => {}
+                            else {
+                                match key.code {
+                                    KeyCode::Esc => {
+                                        app.toggle_editing();
+                                    },
+                                    KeyCode::Enter => {
+                                        app.toggle_editing();
+                                    },
+                                    KeyCode::Backspace => {
+                                        app.insert_backspace();
+                                    },
+                                    KeyCode::Char(val) => {
+                                        app.insert_char(val);
+                                    },
+                                    _ => {}
+                                }
                             }
                         }
                     },
-                    app::Mode::Command => {
+                    Mode::Command => {
                         if key.kind == KeyEventKind::Press {
                             match key.code {
                                 KeyCode::Enter => {
-                                    match &app.command.value as &str{
-                                        ":wq" => {
-                                            config::save(&app);
-                                            break;
-                                        },
-                                        ":q" => {
-                                            break;
-                                        },
-                                        _ => app.execute(),
+                                    let should_exit: bool = app.execute();
+                                    if should_exit {
+                                        break;
                                     }
                                 },
                                 KeyCode::Backspace => {
-                                    app.command.value.pop();
+                                    app.command_backspace();
                                 },
                                 KeyCode::Char(val) => {
-                                    app.command.value.push(val);
+                                    app.command_char(val);
                                 },
                                 _ => {}
                             }
@@ -207,6 +191,7 @@ fn main() -> Result<()> {
             }
         }
     }
+
     let _ = stdout().execute(LeaveAlternateScreen);
     let _ = stdout().execute(PopKeyboardEnhancementFlags);
     disable_raw_mode()?;

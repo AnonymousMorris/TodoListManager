@@ -1,60 +1,55 @@
 use core::panic;
 use std::fs;
+use std::path::PathBuf;
 use home;
 
 use crate::app::App;
-use crate::app::*;
 
-pub fn save(app: &App) {
-    let home = match home::home_dir() {
+const CONFIG_RELATIVE_PATH: &str = ".config/todolist-manager";
+const CONFIG_FILE_NAME: &str = "todos.json";
+
+fn config_dir() -> PathBuf {
+    let home_dir = match home::home_dir() {
             Some(dir) => dir,
             None => panic!("error getting home directory"),
         };
-    let app_path = home.join(".todo-list-manager");
-    if !app_path.exists() {
-        match fs::create_dir(&app_path){
+    let config_path = home_dir.join(CONFIG_RELATIVE_PATH);
+    return config_path;
+}
+
+pub fn save(app: &App) {
+    let config_dir = config_dir();
+    let config_path = config_dir.join(CONFIG_FILE_NAME);
+    if !config_dir.exists() {
+        match fs::create_dir(&config_dir){
             Err(e) => panic!("failed to create dir with error: {}", e),
             Ok(_) => ()
         }
-        print!("created dir: ~/.todo-list-manager");
+        print!("created dir: {}", config_path.display());
     }
     let serialize = serde_json::to_string(&app).unwrap();
-    let file_path = app_path.join("todos.json");
-    match fs::write(file_path, serialize) {
+    match fs::write(config_path, serialize) {
         Err(e) => panic!("write failed with error: {}", e),
         Ok(_) => ()
     }
 }
+
 pub fn retrieve() -> std::result::Result<App, std::io::Error> {
-    let home = match home::home_dir() {
-            Some(dir) => dir,
-            None => panic!("error getting home directory"),
-        };
-    let app_path = home.join(".todo-list-manager");
-    if !app_path.exists() {
-        match fs::create_dir(&app_path){
+    let config_dir = config_dir();
+    let config_path = config_dir.join(CONFIG_FILE_NAME);
+    if !config_dir.exists() {
+        match fs::create_dir(&config_dir){
             Err(e) => return Err(e),
             Ok(_) => return Ok(App::new()),
         }
     }
-    let file_path = app_path.join("todos.json");
-    let todos = match fs::read_to_string(file_path) {
+    let todos = match fs::read_to_string(config_path) {
         Err(e) => return Err(e),
         Ok(result) => result,
     };
-    let mut app: App = match serde_json::from_str(&todos) {
+    let app: App = match serde_json::from_str(&todos) {
         Ok(data) => data,
         Err(_) => App::new(),
     };
-    app.mode = Mode::Normal;
-    app.line_num = None;
-    app.visual_begin = None;
-    for todolist in &mut app.todolists {
-        for todo in &mut todolist.todos {
-            todo.selected = false;
-            todo.editing = false;
-        }
-    }
-    app.command.value = String::new();
     Ok(app)
 }

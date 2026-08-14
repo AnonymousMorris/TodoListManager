@@ -11,7 +11,7 @@ Similar to vim, there is a Normal, Insert, and Visual mode. You can move around 
 
 ### Movements
 | keys | movement |
-| --------------- | ---------------- |
+| ---- | -------- |
 | h | left |
 | l | right |
 | j | down |
@@ -20,7 +20,7 @@ Similar to vim, there is a Normal, Insert, and Visual mode. You can move around 
 ### Create and Delete
 | key | action |
 | --------------- | ---------------- |
-| a | create todo |
+| o | create todo |
 | d | delete todo |
 | n | create todolist |
 | shift + d | delete todolist |
@@ -40,5 +40,10 @@ Press ':' while in normal mode to enter command mode
 | :w | save |
 | :q | quit |
 | :wq | write and quit |
-| clean | deletes all todos marked as completed |
+| :clean | deletes all todos marked as completed |
 
+## Building and Install
+```bash
+cargo build --release
+cargo install --path . --root "$HOME"
+```
