@@ -354,7 +354,14 @@ impl Widget for &TodoList {
         if self.selected && self.editing_title {
             cursor = Span::from(" ").bg(Color::White);
         }
-        let block_title = Line::from_iter([title, cursor]).centered();
+        let title_style = if self.todo_idx.is_none() {
+            Color::Yellow
+        } else{
+            Color::White
+        };
+        let block_title = Line::from_iter([title, cursor])
+            .style(title_style)
+            .centered();
 
         // Todo items
         let todo_items = self.todos.iter().map(|todo| {
